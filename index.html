@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Journal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader-container">
+            <div class="loader-logo">
+                <div class="logo-square"></div>
+                <div class="loader-text">Open Journal</div>
+            </div>
+            <div class="loader-spinner"></div>
+            <p class="loading-text">Loading your thoughts...</p>
+        </div>
+    </div>
+
+    <!-- Sound Controls -->
+    <div class="sound-controls">
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+    </div>
+
+    <!-- Music Controls -->
+    <div class="music-controls">
+        <button class="music-toggle" id="musicToggle">🎵</button>
+    </div>
+
+    <!-- Homepage -->
+    <div class="home-container" id="homepage">
+        <div class="header">
+            <h1>✨ Open Journal ✨</h1>
+            <p class="typing-animation" id="typingText"></p>
+        </div>
+
+        <div class="journals-grid" id="journalsGrid">
+            <div class="journal-card add-journal-card" onclick="createNewJournal()">
+                <div class="plus-icon">+</div>
+                <p>Create New Journal</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journal Editor -->
+    <div class="editor-container" id="editor">
+        <div class="editor-header">
+            <h2 id="journalTitle">New Journal Entry</h2>
+            <div class="editor-controls">
+                <input type="file" id="imageInput" accept="image/*" style="display:none">
+                <button class="btn" onclick="document.getElementById('imageInput').click()">📷 Add Memory</button>
+                <button class="btn btn-secondary" onclick="saveJournal()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="backToHome()">← Back</button>
+            </div>
+        </div>
+
+        <div class="paper-sheet" id="paperSheet">
+            <div class="paper-lines"></div>
+            <textarea id="journalText" placeholder="Dear diary, today I..."></textarea>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="typeSound" src="assets//mechanical-keyboard-typing-hd 30.mp3"></audio>
+    
+    <!-- Background Music -->
+    <audio id="bgMusic1" src="assets/music2.mp3"></audio>
+    <audio id="bgMusic2" src="assets/music4.mp3"></audio>
+    <audio id="bgMusic3" src="assets/music5.mp3"></audio>
+    <audio id="bgMusic3" src="assets/music6.mp3"></audio>
+    <audio id="bgMusic3" src="assets/music1.mp3"></audio>
+    <audio id="bgMusic3" src="assets/music3.mp3"></audio>
+    
+    <footer style="text-align:center; padding:20px; color:var(--villa-nova);">
+         Don't think about pages & ink | @kinshuk_creates
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
