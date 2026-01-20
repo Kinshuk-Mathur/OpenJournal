@@ -2,10 +2,10 @@
 window.addEventListener('load', () => {
     const loadingScreen = document.getElementById('loadingScreen');
     
-    // Hide loading screen after 2 seconds (or when page fully loads)
+    // Hide loading screen after 1 second (faster!)
     setTimeout(() => {
         loadingScreen.classList.add('hidden');
-    }, 2000);
+    }, 1000);
 });
 
 const journalText = document.getElementById('journalText');
@@ -33,29 +33,58 @@ const bgMusics = [
 
 // Set volume for all music
 bgMusics.forEach(music => {
-    music.volume = 0.13;
+    if (music) {
+        music.volume = 0.13;
+    }
 });
 
-// Play first song on page load
+// Music auto-start on first interaction
+let musicStarted = false;
+
+function startMusic() {
+    if (!musicStarted && !isMusicMuted) {
+        playCurrentMusic();
+        musicStarted = true;
+    }
+}
+
+// Try to start music on various user interactions
+document.addEventListener('click', startMusic, { once: false });
+document.addEventListener('keydown', startMusic, { once: false });
+document.addEventListener('scroll', startMusic, { once: false });
+
+// Also try on page load
 window.addEventListener('load', () => {
-    playCurrentMusic();
+    setTimeout(() => {
+        if (!musicStarted) {
+            playCurrentMusic();
+        }
+    }, 500);
 });
 
 // Play current music
 function playCurrentMusic() {
     if (!isMusicMuted && bgMusics[currentMusicIndex]) {
-        bgMusics[currentMusicIndex].play().catch(e => {
-            console.log('Music autoplay prevented. Click anywhere to start music.');
-        });
+        const music = bgMusics[currentMusicIndex];
+        if (music) {
+            music.play().then(() => {
+                console.log('Music playing successfully!');
+                musicStarted = true;
+            }).catch(e => {
+                console.log('Autoplay prevented. User interaction needed.');
+            });
+        }
     }
 }
 
 // When a song ends, play the next one
 bgMusics.forEach((music, index) => {
-    music.addEventListener('ended', () => {
-        currentMusicIndex = (currentMusicIndex + 1) % bgMusics.length;
-        playCurrentMusic();
-    });
+    if (music) {
+        music.addEventListener('ended', () => {
+            currentMusicIndex = (currentMusicIndex + 1) % bgMusics.length;
+            playCurrentMusic();
+        });
+    }
 });
 
 // Music Toggle
@@ -64,18 +93,11 @@ musicToggle.addEventListener('click', () => {
     musicToggle.textContent = isMusicMuted ? '🔇' : '🎵';
     
     if (isMusicMuted) {
-        bgMusics[currentMusicIndex].pause();
+        bgMusics.forEach(m => m && m.pause());
     } else {
         playCurrentMusic();
     }
 });
-
-// Allow music to start on first user interaction
-document.addEventListener('click', () => {
-    if (!isMusicMuted && bgMusics[currentMusicIndex].paused) {
-        playCurrentMusic();
-    }
-}, { once: true });
 
 // Typing Animation Texts
 const typingTexts = [
@@ -331,7 +353,6 @@ function saveJournal() {
         const images = [];
         paperSheet.querySelectorAll('.sticker').forEach(sticker => {
             const img = sticker.querySelector('img');
-            // Compress image data by reducing quality for storage
             images.push({
                 src: img.src,
                 top: sticker.style.top,
