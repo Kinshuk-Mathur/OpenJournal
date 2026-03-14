@@ -24,18 +24,21 @@ let isMuted = false;
 let isMusicMuted = false;
 let currentMusicIndex = 0;
 
-// Background Music Elements
-const bgMusics = [
-    document.getElementById('bgMusic1'),
-    document.getElementById('bgMusic2'),
-    document.getElementById('bgMusic3')
+// Playlist Configuration
+const playlist = [
+    { name: "Lofi Beats 1", file: "assets/music2.mp3", duration: "3:24" },
+    { name: "Lofi Beats 2", file: "assets/music4.mp3", duration: "2:58" },
+    { name: "Lofi Beats 3", file: "assets/music5.mp3", duration: "3:12" },
+    { name: "Lofi Beats 4", file: "assets/music3.mp3", duration: "3:12" },
+    { name: "Lofi Beats 5", file: "assets/music1.mp3", duration: "3:12" },
+    { name: "Lofi Beats 6", file: "assets/music6.mp3", duration: "3:12" }
 ];
 
-// Set volume for all music
-bgMusics.forEach(music => {
-    if (music) {
-        music.volume = 0.13;
-    }
+// Background Music Elements
+const bgMusics = playlist.map(song => {
+    const audio = new Audio(song.file);
+    audio.volume = 0.13;
+    return audio;
 });
 
 // Music auto-start on first interaction
@@ -87,16 +90,118 @@ bgMusics.forEach((music, index) => {
     }
 });
 
-// Music Toggle
+// Music Toggle - Click shows menu
+let menuTimeout;
 musicToggle.addEventListener('click', () => {
+    const musicMenu = document.getElementById('musicMenu');
+    const playlistPanel = document.getElementById('playlistPanel');
+    
+    // Close playlist if open
+    playlistPanel.classList.remove('active');
+    
+    // Toggle menu
+    musicMenu.classList.toggle('show');
+    
+    // Auto-hide menu after 5 seconds
+    clearTimeout(menuTimeout);
+    if (musicMenu.classList.contains('show')) {
+        menuTimeout = setTimeout(() => {
+            musicMenu.classList.remove('show');
+        }, 5000);
+    }
+});
+
+// Toggle Mute
+document.getElementById('toggleMute').addEventListener('click', () => {
     isMusicMuted = !isMusicMuted;
-    musicToggle.textContent = isMusicMuted ? '🔇' : '🎵';
+    
+    const muteIcon = document.getElementById('muteIcon');
+    const muteText = document.getElementById('muteText');
+    const musicButton = document.getElementById('musicToggle');
     
     if (isMusicMuted) {
         bgMusics.forEach(m => m && m.pause());
+        muteIcon.textContent = '🔊';
+        muteText.textContent = 'Unmute Music';
+        musicButton.textContent = '🔇';
     } else {
         playCurrentMusic();
+        muteIcon.textContent = '🔇';
+        muteText.textContent = 'Mute Music';
+        musicButton.textContent = '🎵';
     }
+    
+    // Close menu
+    document.getElementById('musicMenu').classList.remove('show');
+});
+
+// Open Playlist
+document.getElementById('openPlaylist').addEventListener('click', () => {
+    document.getElementById('musicMenu').classList.remove('show');
+    document.getElementById('playlistPanel').classList.toggle('active');
+});
+
+// Close Playlist
+document.getElementById('closePlaylist').addEventListener('click', () => {
+    document.getElementById('playlistPanel').classList.remove('active');
+});
+
+// Build Playlist UI
+function buildPlaylist() {
+    const playlistSongs = document.getElementById('playlistSongs');
+    playlistSongs.innerHTML = '';
+    
+    playlist.forEach((song, index) => {
+        const songItem = document.createElement('div');
+        songItem.className = 'song-item';
+        if (index === currentMusicIndex) {
+            songItem.classList.add('playing');
+        }
+        
+        songItem.innerHTML = `
+            <span class="song-icon">🎵</span>
+            <span class="song-name">${song.name}</span>
+            <span class="song-duration">${song.duration}</span>
+        `;
+        
+        songItem.addEventListener('click', () => {
+            playSong(index);
+        });
+        
+        playlistSongs.appendChild(songItem);
+    });
+}
+
+// Play specific song
+function playSong(index) {
+    // Stop current song
+    if (bgMusics[currentMusicIndex]) {
+        bgMusics[currentMusicIndex].pause();
+        bgMusics[currentMusicIndex].currentTime = 0;
+    }
+    
+    // Update index and play new song
+    currentMusicIndex = index;
+    isMusicMuted = false;
+    musicToggle.textContent = '🎵';
+    
+    playCurrentMusic();
+    updateNowPlaying();
+    buildPlaylist(); // Rebuild to update playing state
+}
+
+// Update "Now Playing" display
+function updateNowPlaying() {
+    const nowPlaying = document.querySelector('.now-playing .song-title');
+    if (nowPlaying) {
+        nowPlaying.textContent = playlist[currentMusicIndex].name;
+    }
+}
+
+// Initialize playlist on load
+window.addEventListener('load', () => {
+    buildPlaylist();
+    updateNowPlaying();
 });
 
 // Typing Animation Texts
