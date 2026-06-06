@@ -3,202 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYNAPSE Journal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <title>My Journal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loader-container">
             <div class="loader-logo">
-                <div class="synapse-logo-mark">
-                    <div class="logo-ring"></div>
-                    <div class="logo-core"></div>
-                    <div class="logo-pulse"></div>
-                </div>
-                <div class="loader-brand">
-                    <span class="brand-synapse">SYNAPSE</span>
-                    <span class="brand-product">JOURNAL</span>
-                </div>
+                <div class="logo-square"></div>
+                <div class="loader-text">Open Journal</div>
             </div>
-            <div class="loader-bar-wrap">
-                <div class="loader-bar" id="loaderBar"></div>
-            </div>
+            <div class="loader-spinner"></div>
             <p class="loading-text">Loading your thoughts...</p>
         </div>
     </div>
 
-    <!-- Top Nav Bar -->
-    <nav class="synapse-nav" id="mainNav">
-        <div class="nav-left">
-            <div class="nav-logo">
-                <div class="nav-logo-mark"></div>
-                <div class="nav-logo-text">
-                    <span class="nav-brand">SYNAPSE</span>
-                    <span class="nav-product">Journal</span>
-                </div>
-            </div>
-        </div>
-        <div class="nav-center" id="navBreadcrumb">
-            <!-- Breadcrumb injected by JS when in editor -->
-        </div>
-        <div class="nav-right">
-            <a href="#" class="nav-back-link" id="navBackLink" style="display:none;" onclick="backToHome(); return false;">
-                ← Dashboard
-            </a>
-            <div class="nav-badge">Beta</div>
-        </div>
-    </nav>
-
     <!-- Sound Controls -->
     <div class="sound-controls">
-        <button class="sound-toggle" id="soundToggle" title="Toggle typing sounds">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-        </button>
+        <button class="sound-toggle" id="soundToggle">🔊</button>
     </div>
 
-    <!-- Music Controls -->
+    <!-- Music Controls with Playlist -->
     <div class="music-controls">
-        <button class="music-toggle" id="musicToggle" title="Music">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
-            </svg>
-        </button>
-
+        <button class="music-toggle" id="musicToggle">🎵</button>
+        
+        <!-- Music Menu (Mute/Playlist) -->
         <div class="music-menu" id="musicMenu">
             <div class="music-menu-item" id="toggleMute">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="muteIconSvg">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <line x1="23" y1="9" x2="17" y2="15"></line>
-                    <line x1="17" y1="9" x2="23" y2="15"></line>
-                </svg>
+                <span id="muteIcon">🔇</span>
                 <span id="muteText">Mute Music</span>
             </div>
             <div class="music-menu-item" id="openPlaylist">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                </svg>
-                <span>Playlist</span>
+                🎵 Playlist
             </div>
         </div>
-
+        
+        <!-- Playlist Panel -->
         <div class="playlist-panel" id="playlistPanel">
             <div class="playlist-header">
-                <div class="playlist-title">
-                    <div class="equalizer" id="equalizerAnim">
-                        <span></span><span></span><span></span><span></span>
-                    </div>
-                    <span>Now Playing</span>
-                </div>
+                <h3>🎵 Now Playing</h3>
                 <button class="close-playlist" id="closePlaylist">×</button>
             </div>
             <div class="now-playing" id="nowPlaying">
-                <span class="song-title-now" id="currentSongName">Lofi Beats 1</span>
-                <span class="song-tag">ambient · study</span>
+                <div class="song-info">
+                    <span class="song-title">Lofi Beats 1</span>
+                    <div class="equalizer">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
             </div>
-            <div class="playlist-songs" id="playlistSongs"></div>
-            <div class="playlist-footer">
-                SYNAPSE ambient collection
+            <div class="playlist-songs" id="playlistSongs">
+                <!-- Songs will be added by JS -->
             </div>
         </div>
     </div>
 
     <!-- Homepage -->
     <div class="home-container" id="homepage">
-        <div class="home-hero">
-            <div class="hero-eyebrow">SYNAPSE JOURNAL</div>
-            <h1 class="hero-title">Your Mind,<br><em>Unfiltered.</em></h1>
+        <div class="header">
+            <h1>✨ Open Journal ✨</h1>
             <p class="typing-animation" id="typingText"></p>
-            <div class="hero-stats" id="heroStats">
-                <div class="stat-chip" id="statEntries"><span id="entryCount">0</span> entries</div>
-                <div class="stat-chip">local &amp; private</div>
-                <div class="stat-chip">a SYNAPSE product</div>
-            </div>
         </div>
 
-        <div class="section-label">YOUR JOURNALS</div>
         <div class="journals-grid" id="journalsGrid">
             <div class="journal-card add-journal-card" onclick="createNewJournal()">
-                <div class="add-icon-wrap">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </div>
-                <p>New Entry</p>
+                <div class="plus-icon">+</div>
+                <p>Create New Journal</p>
             </div>
         </div>
     </div>
 
     <!-- Journal Editor -->
     <div class="editor-container" id="editor">
-        <div class="editor-toolbar">
-            <div class="toolbar-left">
-                <h2 class="editor-date-title" id="journalTitle">New Entry</h2>
-            </div>
-            <div class="toolbar-right">
+        <div class="editor-header">
+            <h2 id="journalTitle">New Journal Entry</h2>
+            <div class="editor-controls">
                 <input type="file" id="imageInput" accept="image/*" style="display:none">
-                <button class="toolbar-btn" onclick="document.getElementById('imageInput').click()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                    Memory
-                </button>
-                <button class="toolbar-btn toolbar-btn-save" onclick="saveJournal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                        <polyline points="7 3 7 8 15 8"></polyline>
-                    </svg>
-                    Save
-                </button>
-                <button class="toolbar-btn toolbar-btn-ghost" onclick="backToHome()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    Back
-                </button>
+                <button class="btn" onclick="document.getElementById('imageInput').click()">📷 Add Memory</button>
+                <button class="btn btn-secondary" onclick="saveJournal()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="backToHome()">← Back</button>
             </div>
         </div>
 
-        <!-- Paper writing area -->
-        <div class="paper-outer">
-            <div class="paper-sheet" id="paperSheet">
-                <div class="paper-lines"></div>
-                <div class="paper-left-margin"></div>
-                <textarea id="journalText" placeholder="Dear diary, today I..."></textarea>
-            </div>
+        <div class="paper-sheet" id="paperSheet">
+            <div class="paper-lines"></div>
+            <textarea id="journalText" placeholder="Dear diary, today I..."></textarea>
         </div>
     </div>
 
-    <!-- Audio -->
+    <!-- Audio Elements -->
     <audio id="typeSound" src="assets/mechanical-keyboard-typing-hd 30.mp3"></audio>
-
-    <footer class="synapse-footer">
-        <span>A <strong>SYNAPSE</strong> Product</span>
-        <span class="footer-dot">·</span>
-        <span>Don't think about pages &amp; ink</span>
-        <span class="footer-dot">·</span>
-        <span>@kinshuk_creates</span>
+    
+    <footer style="text-align:center; padding:20px; color:var(--villa-nova);">
+         Don't think about pages & ink | @kinshuk_creates
     </footer>
-
     <script src="script.js"></script>
 </body>
 </html>
