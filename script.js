@@ -1,47 +1,54 @@
-// Loading Screen Logic
+/* ═══════════════════════════════════════════
+   SYNAPSE JOURNAL — script.js
+   ═══════════════════════════════════════════ */
+
+// ── Loading Screen ──────────────────────────
 window.addEventListener('load', () => {
-    const loadingScreen = document.getElementById('loadingScreen');
-    
-    // Hide loading screen after 1 second (faster!)
+    const bar = document.getElementById('loaderBar');
+    if (bar) {
+        // Animate bar to full, then hide screen
+        setTimeout(() => { bar.style.width = '80%'; }, 100);
+        setTimeout(() => { bar.style.width = '100%'; }, 700);
+    }
     setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-    }, 1000);
+        const screen = document.getElementById('loadingScreen');
+        if (screen) screen.classList.add('hidden');
+    }, 1100);
 });
 
-const journalText = document.getElementById('journalText');
-const typeSound = document.getElementById('typeSound');
-const paperSheet = document.getElementById('paperSheet');
-const imageInput = document.getElementById('imageInput');
-const soundToggle = document.getElementById('soundToggle');
-const musicToggle = document.getElementById('musicToggle');
-const homepage = document.getElementById('homepage');
-const editor = document.getElementById('editor');
+// ── DOM refs ────────────────────────────────
+const journalText  = document.getElementById('journalText');
+const typeSound    = document.getElementById('typeSound');
+const paperSheet   = document.getElementById('paperSheet');
+const imageInput   = document.getElementById('imageInput');
+const soundToggle  = document.getElementById('soundToggle');
+const musicToggle  = document.getElementById('musicToggle');
+const homepage     = document.getElementById('homepage');
+const editor       = document.getElementById('editor');
 const journalsGrid = document.getElementById('journalsGrid');
-const typingText = document.getElementById('typingText');
+const typingText   = document.getElementById('typingText');
 
 let currentJournalId = null;
-let isMuted = false;
-let isMusicMuted = false;
+let isMuted          = false;
+let isMusicMuted     = false;
 let currentMusicIndex = 0;
 
-// Playlist Configuration
+// ── Playlist ─────────────────────────────────
 const playlist = [
-    { name: "Lofi Beats 1", file: "assets/music2.mp3", duration: "3:24" },
-    { name: "Lofi Beats 2", file: "assets/music4.mp3", duration: "2:58" },
-    { name: "Lofi Beats 3", file: "assets/music5.mp3", duration: "3:12" },
-    { name: "Lofi Beats 4", file: "assets/music3.mp3", duration: "3:12" },
-    { name: "Lofi Beats 5", file: "assets/music1.mp3", duration: "3:12" },
-    { name: "Lofi Beats 6", file: "assets/music6.mp3", duration: "3:12" }
+    { name: "Lofi Beats 1", file: "assets/music2.mp3",  duration: "3:24" },
+    { name: "Lofi Beats 2", file: "assets/music4.mp3",  duration: "2:58" },
+    { name: "Lofi Beats 3", file: "assets/music5.mp3",  duration: "3:12" },
+    { name: "Lofi Beats 4", file: "assets/music3.mp3",  duration: "3:12" },
+    { name: "Lofi Beats 5", file: "assets/music1.mp3",  duration: "3:12" },
+    { name: "Lofi Beats 6", file: "assets/music6.mp3",  duration: "3:12" }
 ];
 
-// Background Music Elements
 const bgMusics = playlist.map(song => {
     const audio = new Audio(song.file);
     audio.volume = 0.13;
     return audio;
 });
 
-// Music auto-start on first interaction
 let musicStarted = false;
 
 function startMusic() {
@@ -51,257 +58,201 @@ function startMusic() {
     }
 }
 
-// Try to start music on various user interactions
-document.addEventListener('click', startMusic, { once: false });
+document.addEventListener('click',   startMusic, { once: false });
 document.addEventListener('keydown', startMusic, { once: false });
-document.addEventListener('scroll', startMusic, { once: false });
 
-// Also try on page load
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (!musicStarted) {
-            playCurrentMusic();
-        }
-    }, 500);
+        if (!musicStarted) playCurrentMusic();
+    }, 600);
+    buildPlaylist();
+    updateNowPlaying();
 });
 
-// Play current music
 function playCurrentMusic() {
     if (!isMusicMuted && bgMusics[currentMusicIndex]) {
-        const music = bgMusics[currentMusicIndex];
-        if (music) {
-            music.play().then(() => {
-                console.log('Music playing successfully!');
-                musicStarted = true;
-            }).catch(e => {
-                console.log('Autoplay prevented. User interaction needed.');
-            });
-        }
+        bgMusics[currentMusicIndex].play()
+            .then(() => { musicStarted = true; })
+            .catch(() => {});
     }
 }
 
-// When a song ends, play the next one
 bgMusics.forEach((music, index) => {
     if (music) {
         music.addEventListener('ended', () => {
             currentMusicIndex = (currentMusicIndex + 1) % bgMusics.length;
             playCurrentMusic();
+            updateNowPlaying();
+            buildPlaylist();
         });
     }
 });
 
-// Music Toggle - Click shows menu
+// ── Music toggle / menu ──────────────────────
 let menuTimeout;
 musicToggle.addEventListener('click', () => {
-    const musicMenu = document.getElementById('musicMenu');
+    const musicMenu    = document.getElementById('musicMenu');
     const playlistPanel = document.getElementById('playlistPanel');
-    
-    // Close playlist if open
     playlistPanel.classList.remove('active');
-    
-    // Toggle menu
     musicMenu.classList.toggle('show');
-    
-    // Auto-hide menu after 5 seconds
     clearTimeout(menuTimeout);
     if (musicMenu.classList.contains('show')) {
-        menuTimeout = setTimeout(() => {
-            musicMenu.classList.remove('show');
-        }, 5000);
+        menuTimeout = setTimeout(() => musicMenu.classList.remove('show'), 5000);
     }
 });
 
-// Toggle Mute
 document.getElementById('toggleMute').addEventListener('click', () => {
     isMusicMuted = !isMusicMuted;
-    
-    const muteIcon = document.getElementById('muteIcon');
-    const muteText = document.getElementById('muteText');
-    const musicButton = document.getElementById('musicToggle');
-    
+    const muteText   = document.getElementById('muteText');
+    const muteIconSvg = document.getElementById('muteIconSvg');
+
     if (isMusicMuted) {
         bgMusics.forEach(m => m && m.pause());
-        muteIcon.textContent = '🔊';
         muteText.textContent = 'Unmute Music';
-        musicButton.textContent = '🔇';
+        musicToggle.style.color = 'var(--syn-text-3)';
+        // Show muted icon
+        muteIconSvg.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>`;
     } else {
         playCurrentMusic();
-        muteIcon.textContent = '🔇';
         muteText.textContent = 'Mute Music';
-        musicButton.textContent = '🎵';
+        musicToggle.style.color = '';
+        muteIconSvg.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>`;
     }
-    
-    // Close menu
     document.getElementById('musicMenu').classList.remove('show');
 });
 
-// Open Playlist
 document.getElementById('openPlaylist').addEventListener('click', () => {
     document.getElementById('musicMenu').classList.remove('show');
     document.getElementById('playlistPanel').classList.toggle('active');
 });
 
-// Close Playlist
 document.getElementById('closePlaylist').addEventListener('click', () => {
     document.getElementById('playlistPanel').classList.remove('active');
 });
 
-// Build Playlist UI
 function buildPlaylist() {
     const playlistSongs = document.getElementById('playlistSongs');
     playlistSongs.innerHTML = '';
-    
     playlist.forEach((song, index) => {
-        const songItem = document.createElement('div');
-        songItem.className = 'song-item';
-        if (index === currentMusicIndex) {
-            songItem.classList.add('playing');
-        }
-        
-        songItem.innerHTML = `
-            <span class="song-icon">🎵</span>
+        const item = document.createElement('div');
+        item.className = 'song-item' + (index === currentMusicIndex ? ' playing' : '');
+        item.innerHTML = `
+            <span class="song-icon">${index === currentMusicIndex ? '▶' : '♩'}</span>
             <span class="song-name">${song.name}</span>
             <span class="song-duration">${song.duration}</span>
         `;
-        
-        songItem.addEventListener('click', () => {
-            playSong(index);
-        });
-        
-        playlistSongs.appendChild(songItem);
+        item.addEventListener('click', () => playSong(index));
+        playlistSongs.appendChild(item);
     });
 }
 
-// Play specific song
 function playSong(index) {
-    // Stop current song
     if (bgMusics[currentMusicIndex]) {
         bgMusics[currentMusicIndex].pause();
         bgMusics[currentMusicIndex].currentTime = 0;
     }
-    
-    // Update index and play new song
     currentMusicIndex = index;
     isMusicMuted = false;
-    musicToggle.textContent = '🎵';
-    
+    musicToggle.style.color = '';
     playCurrentMusic();
     updateNowPlaying();
-    buildPlaylist(); // Rebuild to update playing state
-}
-
-// Update "Now Playing" display
-function updateNowPlaying() {
-    const nowPlaying = document.querySelector('.now-playing .song-title');
-    if (nowPlaying) {
-        nowPlaying.textContent = playlist[currentMusicIndex].name;
-    }
-}
-
-// Initialize playlist on load
-window.addEventListener('load', () => {
     buildPlaylist();
-    updateNowPlaying();
-});
+}
 
-// Typing Animation Texts
+function updateNowPlaying() {
+    const el = document.getElementById('currentSongName');
+    if (el) el.textContent = playlist[currentMusicIndex].name;
+}
+
+// ── Typing Animation ─────────────────────────
 const typingTexts = [
     "Your thoughts. Your space.",
-    "Overthinking? Your space.",
+    "Overthinking? Dump it here.",
     "Too many thoughts. One space.",
     "Brain dump zone.",
     "Your digital diary awaits...",
-    "Your diary's cooler cousin."
+    "Your diary's cooler cousin.",
+    "Built with SYNAPSE."
 ];
 
-let textIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
-let typingSpeed = 120;
+let textIndex = 0, charIndex = 0, isDeleting = false, typingSpeed = 120;
 
 function typeWriter() {
     const currentText = typingTexts[textIndex];
-    
     if (isDeleting) {
         typingText.textContent = currentText.substring(0, charIndex - 1);
         charIndex--;
-        typingSpeed = 60;
+        typingSpeed = 55;
     } else {
         typingText.textContent = currentText.substring(0, charIndex + 1);
         charIndex++;
-        typingSpeed = 100;
+        typingSpeed = 95;
     }
-
     if (!isDeleting && charIndex === currentText.length) {
-        typingSpeed = 2000;
-        isDeleting = true;
+        typingSpeed = 2200; isDeleting = true;
     } else if (isDeleting && charIndex === 0) {
         isDeleting = false;
         textIndex = (textIndex + 1) % typingTexts.length;
         typingSpeed = 500;
     }
-
     setTimeout(typeWriter, typingSpeed);
 }
-
-// Start typing animation
 typeWriter();
 
-// Set natural volume (10%)
-typeSound.volume = 0.10;
-
-// Sound Toggle
+// ── Sound toggle ─────────────────────────────
+typeSound.volume = 0.1;
 soundToggle.addEventListener('click', () => {
     isMuted = !isMuted;
-    soundToggle.textContent = isMuted ? '🔇' : '🔊';
     typeSound.muted = isMuted;
+    soundToggle.style.opacity = isMuted ? '0.4' : '1';
 });
 
-// Typing Sound
 journalText.addEventListener('keydown', () => {
     if (!isMuted) {
         typeSound.currentTime = 0;
-        typeSound.play();
+        typeSound.play().catch(() => {});
     }
 });
 
-// Image Upload
+// ── Image Upload (Memory stickers) ───────────
 imageInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'sticker';
-            wrapper.style.top = Math.random() * 200 + 100 + 'px';
-            wrapper.style.left = Math.random() * 200 + 50 + 'px';
-            
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            img.style.width = '100%';
-            img.style.display = 'block';
-            
-            const controls = document.createElement('div');
-            controls.className = 'sticker-controls';
-            controls.innerHTML = `
-                <button class="sticker-btn" onclick="resizeSticker(this, 0.8)">−</button>
-                <button class="sticker-btn" onclick="resizeSticker(this, 1.2)">+</button>
-                <button class="sticker-btn" onclick="deleteSticker(this)">×</button>
-            `;
-            
-            wrapper.appendChild(img);
-            wrapper.appendChild(controls);
-            makeDraggable(wrapper);
-            paperSheet.appendChild(wrapper);
-        }
-        reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'sticker';
+        wrapper.style.top  = Math.random() * 180 + 80 + 'px';
+        wrapper.style.left = Math.random() * 180 + 60 + 'px';
+
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        img.style.cssText = 'width:100%;display:block;';
+
+        const controls = document.createElement('div');
+        controls.className = 'sticker-controls';
+        controls.innerHTML = `
+            <button class="sticker-btn" onclick="resizeSticker(this, 0.8)">−</button>
+            <button class="sticker-btn" onclick="resizeSticker(this, 1.2)">+</button>
+            <button class="sticker-btn" onclick="deleteSticker(this)">×</button>
+        `;
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(controls);
+        makeDraggable(wrapper);
+        paperSheet.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
 });
 
 function resizeSticker(btn, scale) {
     const sticker = btn.closest('.sticker');
-    const currentWidth = sticker.offsetWidth;
-    sticker.style.maxWidth = (currentWidth * scale) + 'px';
+    sticker.style.maxWidth = (sticker.offsetWidth * scale) + 'px';
 }
 
 function deleteSticker(btn) {
@@ -309,92 +260,98 @@ function deleteSticker(btn) {
 }
 
 function makeDraggable(el) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    let isDragging = false;
-    
-    el.onmousedown = dragMouseDown;
-    el.ontouchstart = dragMouseDown;
+    let pos1=0,pos2=0,pos3=0,pos4=0,isDragging=false;
+    el.onmousedown = el.ontouchstart = dragStart;
 
-    function dragMouseDown(e) {
-        if (e.target.classList.contains('sticker-btn')) {
-            return;
-        }
-        
+    function dragStart(e) {
+        if (e.target.classList.contains('sticker-btn')) return;
         e.preventDefault();
         isDragging = true;
         const touch = e.touches ? e.touches[0] : e;
-        
-        // Get position relative to paper-sheet container
-        const rect = paperSheet.getBoundingClientRect();
+        const rect  = paperSheet.getBoundingClientRect();
         pos3 = touch.clientX - rect.left + paperSheet.scrollLeft;
-        pos4 = touch.clientY - rect.top + paperSheet.scrollTop;
-        
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-        document.ontouchend = closeDragElement;
-        document.ontouchmove = elementDrag;
+        pos4 = touch.clientY - rect.top  + paperSheet.scrollTop;
+        document.onmouseup = document.ontouchend = stopDrag;
+        document.onmousemove = document.ontouchmove = drag;
     }
 
-    function elementDrag(e) {
+    function drag(e) {
         if (!isDragging) return;
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
-        
-        // Calculate position relative to paper-sheet
-        const rect = paperSheet.getBoundingClientRect();
-        const newX = touch.clientX - rect.left + paperSheet.scrollLeft;
-        const newY = touch.clientY - rect.top + paperSheet.scrollTop;
-        
-        pos1 = pos3 - newX;
-        pos2 = pos4 - newY;
-        pos3 = newX;
-        pos4 = newY;
-        
-        el.style.top = (el.offsetTop - pos2) + "px";
-        el.style.left = (el.offsetLeft - pos1) + "px";
+        const rect  = paperSheet.getBoundingClientRect();
+        const nx = touch.clientX - rect.left + paperSheet.scrollLeft;
+        const ny = touch.clientY - rect.top  + paperSheet.scrollTop;
+        pos1 = pos3 - nx; pos2 = pos4 - ny;
+        pos3 = nx; pos4 = ny;
+        el.style.top  = (el.offsetTop  - pos2) + 'px';
+        el.style.left = (el.offsetLeft - pos1) + 'px';
     }
 
-    function closeDragElement() {
+    function stopDrag() {
         isDragging = false;
-        document.onmouseup = null;
-        document.onmousemove = null;
-        document.ontouchend = null;
-        document.ontouchmove = null;
+        document.onmouseup = document.onmousemove =
+        document.ontouchend = document.ontouchmove = null;
     }
 }
 
-// Journal Management
+// ── Journal management ───────────────────────
 function loadJournals() {
     const keys = Object.keys(localStorage).filter(k => k.startsWith('journal_'));
     journalsGrid.innerHTML = `
         <div class="journal-card add-journal-card" onclick="createNewJournal()">
-            <div class="plus-icon">+</div>
-            <p>Create New Journal</p>
+            <div class="add-icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </div>
+            <p>New Entry</p>
         </div>
     `;
+
+    // Update entry count chip
+    const countEl = document.getElementById('entryCount');
+    if (countEl) countEl.textContent = keys.length;
 
     if (keys.length === 0) {
         journalsGrid.innerHTML += `
             <div class="empty-state">
-                <h2>No journals yet</h2>
-                <p>Click the + button to start your first journal entry</p>
+                <h2>No journals yet.</h2>
+                <p>Start your first entry — your thoughts deserve a home.</p>
             </div>
         `;
+        return;
     }
+
+    // Sort by newest first
+    keys.sort((a, b) => {
+        const tA = parseInt(a.replace('journal_', '')) || 0;
+        const tB = parseInt(b.replace('journal_', '')) || 0;
+        return tB - tA;
+    });
 
     keys.forEach(key => {
         try {
-            const journal = JSON.parse(localStorage.getItem(key));
+            const j = JSON.parse(localStorage.getItem(key));
+            const wordCount = j.text.trim() ? j.text.trim().split(/\s+/).length : 0;
+
             const card = document.createElement('div');
             card.className = 'journal-card';
             card.innerHTML = `
-                <h3>${journal.title}</h3>
-                <div class="date">${journal.date}</div>
-                <div class="preview">${journal.text.substring(0, 100)}${journal.text.length > 100 ? '...' : ''}</div>
+                <div>
+                    <div class="date">${j.date.split(',')[0] || j.date}</div>
+                    <h3>${j.title}</h3>
+                    <div class="preview">${j.text.substring(0, 110)}${j.text.length > 110 ? '...' : ''}</div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-words">${wordCount} words</span>
+                    <span class="card-open-hint">Open →</span>
+                </div>
             `;
             card.onclick = () => openJournal(key);
             journalsGrid.appendChild(card);
-        } catch (e) {
+        } catch(e) {
             console.error('Error loading journal:', key, e);
         }
     });
@@ -403,52 +360,53 @@ function loadJournals() {
 function createNewJournal() {
     currentJournalId = 'journal_' + Date.now();
     journalText.value = '';
-    document.getElementById('journalTitle').textContent = 'New Journal Entry';
+    document.getElementById('journalTitle').textContent = formatDateTitle(new Date());
     paperSheet.querySelectorAll('.sticker').forEach(s => s.remove());
     homepage.style.display = 'none';
-    editor.style.display = 'block';
+    editor.style.display   = 'block';
+    updateNavForEditor(true);
+    setTimeout(() => journalText.focus(), 100);
 }
 
 function openJournal(id) {
     currentJournalId = id;
     try {
-        const journal = JSON.parse(localStorage.getItem(id));
-        journalText.value = journal.text;
-        document.getElementById('journalTitle').textContent = journal.title;
-        
+        const j = JSON.parse(localStorage.getItem(id));
+        journalText.value = j.text;
+        document.getElementById('journalTitle').textContent = j.title;
+
         paperSheet.querySelectorAll('.sticker').forEach(s => s.remove());
-        if (journal.images) {
-            journal.images.forEach(imgData => {
+        if (j.images) {
+            j.images.forEach(imgData => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'sticker';
-                wrapper.style.top = imgData.top;
-                wrapper.style.left = imgData.left;
+                wrapper.style.top      = imgData.top;
+                wrapper.style.left     = imgData.left;
                 wrapper.style.maxWidth = imgData.width;
-                
+
                 const img = document.createElement('img');
                 img.src = imgData.src;
-                img.style.width = '100%';
-                img.style.display = 'block';
-                
+                img.style.cssText = 'width:100%;display:block;';
+
                 const controls = document.createElement('div');
                 controls.className = 'sticker-controls';
                 controls.innerHTML = `
-                    <button class="sticker-btn" onclick="resizeSticker(this, 0.8)">−</button>
-                    <button class="sticker-btn" onclick="resizeSticker(this, 1.2)">+</button>
+                    <button class="sticker-btn" onclick="resizeSticker(this,0.8)">−</button>
+                    <button class="sticker-btn" onclick="resizeSticker(this,1.2)">+</button>
                     <button class="sticker-btn" onclick="deleteSticker(this)">×</button>
                 `;
-                
                 wrapper.appendChild(img);
                 wrapper.appendChild(controls);
                 makeDraggable(wrapper);
                 paperSheet.appendChild(wrapper);
             });
         }
-        
+
         homepage.style.display = 'none';
-        editor.style.display = 'block';
-    } catch (e) {
-        alert('❌ Error loading journal. It may be corrupted.');
+        editor.style.display   = 'block';
+        updateNavForEditor(true);
+    } catch(e) {
+        showToast('❌ Error loading journal. It may be corrupted.', 'error');
         console.error('Load error:', e);
     }
 }
@@ -459,36 +417,34 @@ function saveJournal() {
         paperSheet.querySelectorAll('.sticker').forEach(sticker => {
             const img = sticker.querySelector('img');
             images.push({
-                src: img.src,
-                top: sticker.style.top,
-                left: sticker.style.left,
+                src:   img.src,
+                top:   sticker.style.top,
+                left:  sticker.style.left,
                 width: sticker.style.maxWidth
             });
         });
 
-        const journal = {
-            title: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-            date: new Date().toLocaleString(),
-            text: journalText.value,
+        const j = {
+            title:  formatDateTitle(new Date()),
+            date:   new Date().toLocaleString(),
+            text:   journalText.value,
             images: images
         };
 
-        const journalString = JSON.stringify(journal);
-        
-        // Check if we're approaching localStorage limit (5MB = ~5,000,000 chars)
-        if (journalString.length > 4500000) {
-            alert('⚠️ Journal is too large! Try removing some images or splitting into multiple entries.');
+        const jString = JSON.stringify(j);
+        if (jString.length > 4500000) {
+            showToast('⚠️ Journal is too large! Try removing some images.', 'error');
             return;
         }
 
-        localStorage.setItem(currentJournalId, journalString);
-        alert('✨ Journal saved successfully!');
-        backToHome();
-    } catch (e) {
+        localStorage.setItem(currentJournalId, jString);
+        showToast('✦ Entry saved to SYNAPSE Journal', 'success');
+        setTimeout(() => backToHome(), 800);
+    } catch(e) {
         if (e.name === 'QuotaExceededError') {
-            alert('⚠️ Storage full! Try:\n• Remove some old journals\n• Use fewer/smaller images\n• Split into multiple entries');
+            showToast('⚠️ Storage full! Remove old entries or reduce images.', 'error');
         } else {
-            alert('❌ Error saving journal: ' + e.message);
+            showToast('❌ Error saving: ' + e.message, 'error');
         }
         console.error('Save error:', e);
     }
@@ -496,9 +452,71 @@ function saveJournal() {
 
 function backToHome() {
     homepage.style.display = 'block';
-    editor.style.display = 'none';
+    editor.style.display   = 'none';
+    updateNavForEditor(false);
     loadJournals();
 }
 
-// Initialize
+// ── Nav breadcrumb update ─────────────────────
+function updateNavForEditor(isEditing) {
+    const breadcrumb  = document.getElementById('navBreadcrumb');
+    const backLink    = document.getElementById('navBackLink');
+    if (isEditing) {
+        breadcrumb.textContent = 'Writing';
+        if (backLink) backLink.style.display = 'block';
+    } else {
+        breadcrumb.textContent = '';
+        if (backLink) backLink.style.display = 'none';
+    }
+}
+
+// ── Toast notification ────────────────────────
+function showToast(message, type = 'success') {
+    // Remove existing toast
+    const existing = document.querySelector('.syn-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'syn-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+        background: ${type === 'success' ? 'rgba(124,106,247,0.95)' : 'rgba(180,60,60,0.95)'};
+        color: white;
+        padding: 10px 22px;
+        border-radius: 30px;
+        font-family: var(--font-ui, 'Space Grotesk', sans-serif);
+        font-size: 0.85rem;
+        font-weight: 500;
+        z-index: 9000;
+        opacity: 0;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        white-space: nowrap;
+        letter-spacing: 0.02em;
+    `;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+// ── Date title formatter ──────────────────────
+function formatDateTitle(date) {
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    });
+}
+
+// ── Init ──────────────────────────────────────
 loadJournals();
